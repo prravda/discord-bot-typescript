@@ -39,8 +39,10 @@ export class PpomppuHotDealScrapper {
                 const baseUrl = 'https://www.ppomppu.co.kr';
                 const dealLink = eachHotDeal.getAttribute('href');
                 const title = eachHotDeal.textContent;
+                const idOfDeal = dealLink?.split('&no=')[1];
 
                 dealList.push({
+                    id: idOfDeal ? Number(idOfDeal) : 0,
                     title: title ? title : '링크 접속 후 확인해주세요!',
                     link: `${baseUrl}${dealLink}`,
                 });
