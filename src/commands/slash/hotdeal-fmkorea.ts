@@ -43,7 +43,7 @@ export const HotDealFmKoreaCommand: SlashCommand = {
                         .map<APIEmbedField>((deal) => {
                             return {
                                 name: `**· ${deal.title}**`,
-                                value: `[└─⛺️: ${deal.detailedInfo.sellerName} / 💵: ${deal.detailedInfo.productPrice} / 📦: ${deal.detailedInfo.shippingCharge}](${deal.link})`,
+                                value: `[└─⛺️: ${deal.sellerName} / 💵: ${deal.productPrice} / 📦: ${deal.shippingCharge}](${deal.link})`,
                             };
                         })
                 )

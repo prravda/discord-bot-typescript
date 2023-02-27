@@ -70,6 +70,17 @@ export class FmkoreaHotDealScrapper {
         return this.placeHolderOnError;
     }
 
+    private extractSrlFromPopularHotDeal(verboseUrl: string | null): number {
+        if (verboseUrl) {
+            const extractedSrl = verboseUrl
+                .split('document_srl=')[1]
+                .split('&')[0];
+
+            return Number(extractedSrl);
+        }
+        return 0;
+    }
+
     private async parsePopularItem(hotDealPage: Page, isMobile: boolean) {
         const selectorForDesktop = 'tr.notice_pop1 > td.title > a:not([title])';
         const selectorForMobile = 'li.pop1 > a[href]';
@@ -93,6 +104,7 @@ export class FmkoreaHotDealScrapper {
 
         return rawPopularHotDealList.map<FmKoreaPopularHotDeal>((rawData) => {
             return {
+                id: this.extractSrlFromPopularHotDeal(rawData.link),
                 title: this.refineVerboseTitleOfPopularHotDeal(rawData.title),
                 link: this.refineVerboseUrlOfPopularHotDeal(rawData.link),
             };
@@ -106,6 +118,13 @@ export class FmkoreaHotDealScrapper {
             return `https://fmkorea.com${rawUrl}`;
         }
         return this.placeHolderOnError;
+    }
+
+    private castVerboseUrlToNumber(rawUrl: string | null | undefined): number {
+        if (rawUrl) {
+            return Number(rawUrl);
+        }
+        return 0;
     }
 
     private refineVerboseTitleOfGeneralHotDeal(rawTitle: string | null) {
@@ -136,6 +155,9 @@ export class FmkoreaHotDealScrapper {
 
                     const rawTitleAndLink = liTag.querySelector('h3.title > a');
 
+                    const category =
+                        liTag.querySelector('span.category > a')?.textContent;
+
                     if (!rawTitleAndLink) {
                         throw new Error(
                             'Failed to get general hot deal information - title and link from fmkorea.com'
@@ -147,11 +169,10 @@ export class FmkoreaHotDealScrapper {
                             rawTitleAndLink.className.trim() === 'hotdeal_var8',
                         title: rawTitleAndLink.textContent,
                         link: rawTitleAndLink.getAttribute('href'),
-                        detailedInfo: {
-                            sellerName: rawSellerName,
-                            productPrice: rawProductPrice,
-                            shippingCharge: rawShippingCharge,
-                        },
+                        sellerName: rawSellerName,
+                        productPrice: rawProductPrice,
+                        shippingCharge: rawShippingCharge,
+                        category,
                     };
                 });
             }
@@ -161,13 +182,20 @@ export class FmkoreaHotDealScrapper {
             .filter((deal) => deal.isValid)
             .map<FmKoreaHotDeal>((validDeal) => {
                 const { isValid, ...otherProps } = validDeal;
-                const { title, link, detailedInfo } = otherProps;
+                const {
+                    title,
+                    link,
+                    sellerName,
+                    productPrice,
+                    shippingCharge,
+                    category,
+                } = otherProps;
 
                 if (
-                    !detailedInfo ||
-                    !detailedInfo.sellerName ||
-                    !detailedInfo.productPrice ||
-                    !detailedInfo.shippingCharge ||
+                    !sellerName ||
+                    !productPrice ||
+                    !shippingCharge ||
+                    !category ||
                     !title ||
                     !link
                 ) {
@@ -177,13 +205,13 @@ export class FmkoreaHotDealScrapper {
                 }
 
                 return {
+                    id: this.castVerboseUrlToNumber(link),
                     title: this.refineVerboseTitleOfGeneralHotDeal(title),
                     link: this.refineVerboseUrlOfGeneralHotDeal(link),
-                    detailedInfo: {
-                        sellerName: detailedInfo.sellerName,
-                        productPrice: detailedInfo.productPrice,
-                        shippingCharge: detailedInfo.shippingCharge,
-                    },
+                    sellerName,
+                    productPrice,
+                    shippingCharge,
+                    category,
                 };
             });
     }
@@ -239,11 +267,9 @@ export class FmkoreaHotDealScrapper {
             };
         } catch (e) {
             console.error(e);
+            throw e;
         } finally {
             await browser.close();
         }
     }
 }
-
-const instance = new FmkoreaHotDealScrapper();
-instance.requestDocument().then((res) => console.log(res));
