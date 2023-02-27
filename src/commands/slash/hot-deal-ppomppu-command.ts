@@ -1,6 +1,6 @@
 import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
 import { SlashCommand } from '../../../types';
-import { PpomppuHotDealScrapper } from '../../scrappers/ppomppu-hot-deal-scrapper';
+import { PpomppuHotDealScrapperService } from '../../scrappers/ppomppu/services/ppomppu-hot-deal-scrapper.service';
 import { APIEmbedField } from 'discord-api-types/v10';
 
 export const HotDealPpomppuCommand: SlashCommand = {
@@ -11,7 +11,7 @@ export const HotDealPpomppuCommand: SlashCommand = {
     execute: async (interaction) => {
         await interaction.deferReply();
 
-        const scrapperInstance = new PpomppuHotDealScrapper();
+        const scrapperInstance = new PpomppuHotDealScrapperService();
         const hotDealResult = await scrapperInstance.requestDocument();
 
         const resultEmbed = new EmbedBuilder()
