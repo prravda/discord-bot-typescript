@@ -12,6 +12,7 @@ export interface SlashCommand {
 }
 
 export interface BasicHotDeal {
+    id: number;
     title: string;
     link: string;
 }
@@ -19,11 +20,10 @@ export interface BasicHotDeal {
 export interface FmKoreaPopularHotDeal extends BasicHotDeal {}
 
 export interface FmKoreaHotDeal extends BasicHotDeal {
-    detailedInfo: {
-        sellerName: string;
-        productPrice: string;
-        shippingCharge: string;
-    };
+    sellerName: string;
+    productPrice: string;
+    shippingCharge: string;
+    category: string;
 }
 
 export interface FmKoreaTotalHotDeal {}
