@@ -61,7 +61,7 @@ export class PpomppuHotDealScrapperService {
             const repo = DataSource.getPpomppuHotDealRepository();
             const previousDeal = repo.getDeal();
 
-            if (previousDeal) {
+            if (previousDeal.length > 0) {
                 return previousDeal;
             }
 
