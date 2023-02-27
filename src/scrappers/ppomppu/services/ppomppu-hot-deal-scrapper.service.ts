@@ -1,11 +1,12 @@
 import axios from 'axios';
-import { RuntimeConfig } from '../../infra/runtime-config';
+import { RuntimeConfig } from '../../../../infra/runtime-config';
 import { JSDOM } from 'jsdom';
 import { decode } from 'iconv-lite';
-import { BasicHotDeal } from '../../types';
+import { BasicHotDeal } from '../../../../types';
+import { DataSource } from '../../../../infra/data-source';
 
-export class PpomppuHotDealScrapper {
-    public async requestDocument() {
+export class PpomppuHotDealScrapperService {
+    private async parsePpomppu() {
         try {
             const result = await axios.request({
                 url: RuntimeConfig.PPOMPPU_HOT_DEAL_URL,
@@ -49,6 +50,25 @@ export class PpomppuHotDealScrapper {
             });
 
             return dealList;
+        } catch (e) {
+            console.error(e);
+            throw e;
+        }
+    }
+
+    public async requestDocument() {
+        try {
+            const repo = DataSource.getPpomppuHotDealRepository();
+            const previousDeal = repo.getDeal();
+
+            if (previousDeal) {
+                return previousDeal;
+            }
+
+            const refreshedResult = await this.parsePpomppu();
+            repo.setDeal(refreshedResult);
+
+            return refreshedResult;
         } catch (e) {
             console.error(e);
             throw e;
